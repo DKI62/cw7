@@ -1,18 +1,18 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
+from .models import CustomUser
+from django.contrib.auth.hashers import make_password
 
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
+    telegram_id = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
-        model = User
-        fields = ['username', 'email', 'password']
+        model = CustomUser
+        fields = ['username', 'email', 'password', 'telegram_id']
+        extra_kwargs = {'email': {'required': False}}  # Делаем email необязательным
 
     def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password']
-        )
+        validated_data['password'] = make_password(validated_data['password'])  # Хешируем пароль
+        user = CustomUser.objects.create(**validated_data)
         return user

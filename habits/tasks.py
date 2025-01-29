@@ -1,9 +1,9 @@
+import asyncio
 from celery import shared_task
 from telegram import Bot
 from django.conf import settings
 from datetime import datetime
 from .models import Habit
-import asyncio
 
 
 @shared_task
@@ -12,8 +12,8 @@ def send_habit_reminders():
     now = datetime.now().time().replace(microsecond=0)  # Убираем микросекунды
     print(f"Текущее время: {now}")  # Лог текущего времени
 
-    # Ищем привычки по текущему времени (часы и минуты)
-    habits = Habit.objects.filter(time__hour=now.hour, time__minute=now.minute)
+    # Получаем привычки синхронно
+    habits = Habit.objects.filter(time__hour=now.hour, time__minute=now.minute).select_related("user")
     print(f"Найдено привычек: {len(habits)}")
 
     async def send_message_async(chat_id, text):
@@ -23,8 +23,12 @@ def send_habit_reminders():
     async def main():
         tasks = []
         for habit in habits:
-            message = f"Напоминание о привычке: {habit.action} в {habit.place}"
-            tasks.append(send_message_async(habit.telegram_user_id, message))
-        await asyncio.gather(*tasks)
+            # Убеждаемся, что у пользователя есть Telegram ID
+            if habit.user.telegram_id:
+                message = f"Напоминание о привычке: {habit.action} в {habit.place}"
+                tasks.append(send_message_async(habit.user.telegram_id, message))
+        if tasks:
+            await asyncio.gather(*tasks)
 
+    # Запускаем асинхронный цикл
     asyncio.run(main())

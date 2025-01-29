@@ -1,12 +1,12 @@
 import pytest
-from django.contrib.auth.models import User
+from users.models import CustomUser
 from habits.models import Habit
 from datetime import datetime, time
 
 
 @pytest.mark.django_db
 def test_send_habit_reminders(mocker):
-    user = User.objects.create(username="test_user")
+    user = CustomUser.objects.create(username="test_user", telegram_id="123456789")
 
     # Устанавливаем точное время
     Habit.objects.create(
@@ -14,7 +14,6 @@ def test_send_habit_reminders(mocker):
         action="Test Habit",
         time=time(12, 0),
         place="Test Place",
-        telegram_user_id="123456"
     )
 
     print(f"Привычки перед тестом: {list(Habit.objects.values())}")
@@ -35,6 +34,6 @@ def test_send_habit_reminders(mocker):
 
     # Проверяем, что сообщение отправлено
     mock_send_message.assert_called_once_with(
-        chat_id="123456",
+        chat_id="123456789",
         text="Напоминание о привычке: Test Habit в Test Place"
     )

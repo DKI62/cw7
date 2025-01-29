@@ -1,6 +1,6 @@
 import pytest
 from rest_framework.test import APIClient
-from django.contrib.auth.models import User
+from users.models import CustomUser as User
 from habits.models import Habit
 
 
