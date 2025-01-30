@@ -26,52 +26,68 @@
 
 ---
 
-## Установка
+## Установка и настройка с Docker
 
 ### Требования
 
-- Python 3.12+
-- PostgreSQL
-- Redis
-- Установленный `Poetry` для управления зависимостями.
+- Установленный **Docker** и **Docker Compose**.
 
 ### Инструкция по установке
 
 1. Склонируйте репозиторий:
     ```bash
-    git clone <git@github.com:DKI62/cw7.git>
+    git clone <https://github.com/DKI62/cw7>
+    cd cw7
     ```
 
-2. Установите зависимости:
+2. Создайте файл `.env` в корне проекта и добавьте в него настройки для базы данных и Telegram-бота:
+    ```.env.example
+   SECRET_KEY=django-insecure-(mn$zw2z)c(i!0$r#vudyh7_r7yx8v2uf92n6g$3-u$$=vqi%*
+   
+   REDIS_URL=
+   CELERY_BROKER_URL=
+   
+   TELEGRAM_BOT_TOKEN=
+   
+   #db
+   POSTGRES_DB=
+   POSTGRES_USER=
+   POSTGRES_PASSWORD=
+   POSTGRES_HOST=
+   POSTGRES_PORT=
+    ```
+
+3. Запустите контейнеры с помощью Docker Compose:
     ```bash
-    poetry install
+    docker-compose up --build -d
     ```
 
-3. Создайте и настройте файл `.env` в корне проекта:
-    ```env
-   пример заполнения .env.example
-    ```
+    Эта команда соберет и запустит контейнеры для Django, PostgreSQL, Redis, Celery и Telegram-бота.
 
-4. Выполните миграции базы данных:
+4. Создайте суперпользователя:
     ```bash
-    python manage.py migrate
+    docker-compose exec django_app python manage.py createsuperuser
     ```
 
-5. Создайте суперпользователя:
-    ```bash
-    python manage.py createsuperuser
-    ```
+    Следуйте инструкциям для создания суперпользователя.
 
-6. Запустите сервер разработки:
-    ```bash
-    python manage.py runserver
-    ```
+5. Для запуска Celery, откройте еще два терминала и выполните команды:
+    - Для рабочего процесса Celery:
+      ```bash
+      docker-compose exec celery_worker celery -A config worker --loglevel=info
+      ```
+    - Для планировщика Celery:
+      ```bash
+      docker-compose exec celery_beat celery -A config beat --loglevel=info
+      ```
 
-7. Настройте и запустите Celery:
-    ```bash
-    celery -A config worker --loglevel=info
-    celery -A config beat --loglevel=info
-    ```
+### Доступ к приложению
+
+- **Django Admin** доступен по адресу: `http://localhost:8000/admin/`
+- **API** доступно по адресу: `http://localhost:8000/api/`
+- **Документация API** доступна по адресу:
+  - Swagger: `http://localhost:8000/api/docs/swagger/`
+  - Redoc: `http://localhost:8000/api/docs/redoc/`
 
 ---
 
@@ -95,9 +111,7 @@
     - `POST /api/token/refresh/` — обновление токенов.
 
 3. **Привычки**:
-    - `GET /api/habits/` — список привычек текущего пользователя (с пагинацией),список публичных привычек для всех, в
-      том
-      числе неавторизованным пользователям
+    - `GET /api/habits/` — список привычек текущего пользователя (с пагинацией), список публичных привычек для всех, в том числе неавторизованным пользователям.
     - `POST /api/habits/` — создание новой привычки.
     - `GET /api/habits/{id}/` — получение подробной информации о привычке.
     - `PUT /api/habits/{id}/` — обновление привычки.
@@ -143,9 +157,8 @@
 Документация автоматически генерируется и доступна по адресу:
 
 /api/docs/swagger/ & /api/docs/redoc/
---
-Для визуального просмотра используйте Swagger UI:
 
+Для визуального просмотра используйте Swagger UI.
 
 ---
 
@@ -157,11 +170,29 @@
 
 2. **Проект готов к развёртыванию**:
    - Используются переменные окружения.
-   - Настроены зависимости в `poetry.lock`.
+   - Настроены зависимости в `poetry.lock` & 'requirements.txt'.
 
 3. **Работа с асинхронностью**:
    - Использованы Celery и Telegram API для асинхронной отправки сообщений.
 
 ---
 
+## Развертывание на удаленном сервере
 
+1. Установите Docker и Docker Compose на сервер.
+2. Клонируйте репозиторий на сервер.
+3. Создайте и настройте файл `.env` на сервере.
+4. Запустите контейнеры с помощью команды:
+
+```bash
+docker-compose up --build -d
+```
+---
+-Проект будет запущен на удаленном сервере.-
+---
+
+      Разработано в рамках учебного проекта.
+      Используются Django, Celery, Redis, PostgreSQL и Telegram Bot API.
+
+
+В этом `README.md` добавлена информация о настройке Docker, о том, как собрать и запустить проект с помощью Docker Compose, а также краткое описание функционала и структуры API.
