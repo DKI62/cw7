@@ -42,7 +42,7 @@
 
 2. Создайте файл `.env` в корне проекта и добавьте в него настройки для базы данных и Telegram-бота:
     ```.env.example
-   SECRET_KEY=django-insecure-(mn$zw2z)c(i!0$r#vudyh7_r7yx8v2uf92n6g$3-u$$=vqi%*
+   SECRET_KEY=
    
    REDIS_URL=
    CELERY_BROKER_URL=
